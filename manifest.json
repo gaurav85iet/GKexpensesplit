@@ -1,0 +1,23 @@
+{
+  "name": "Tally — Cost Splitter",
+  "short_name": "Tally",
+  "description": "Split expenses for home, trips, and outings",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#10130f",
+  "theme_color": "#10130f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
