@@ -258,7 +258,18 @@
 =========================================================== */
 const SUPABASE_URL = 'https://moaxmlpvctbmvtjahzqx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vYXhtbHB2Y3RibXZ0amFoenF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwMzY3MzIsImV4cCI6MjA5NzYxMjczMn0.N3msjdxHLtHqvO5NJL4MuOfm4qjIotkVobmR_fQqVX0';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let sb = null;
+try{
+  if(window.supabase && typeof window.supabase.createClient === 'function'){
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else {
+    console.warn('Supabase library not available — running in local-only mode');
+  }
+}catch(e){
+  console.warn('Supabase init failed — running in local-only mode', e);
+  sb = null;
+}
+function sbReady(){ return !!sb; }
 
 /* ===========================================================
    LOCAL CACHE / OFFLINE QUEUE
@@ -313,7 +324,7 @@ window.addEventListener('online', ()=>{ setStatus(); flushOutbox(); });
 window.addEventListener('offline', setStatus);
 
 async function flushOutbox(){
-  if(!navigator.onLine || outbox.length===0) return;
+  if(!sbReady() || !navigator.onLine || outbox.length===0) return;
   const pending = [...outbox];
   for(const job of pending){
     try{
@@ -331,7 +342,7 @@ function queueWrite(table, op, payload){
 }
 
 async function pullScenario(scenarioId){
-  if(!navigator.onLine) return false;
+  if(!sbReady() || !navigator.onLine) return false;
   try{
     const [{data:sc}, {data:members}, {data:expenses}, {data:settlements}] = await Promise.all([
       sb.from('scenarios').select('*').eq('id', scenarioId).single(),
@@ -677,7 +688,7 @@ document.getElementById('joinSave').addEventListener('click', async ()=>{
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   const yourName = document.getElementById('joinName').value.trim();
   if(!code || !yourName){ showToast('Enter the code and your name'); return; }
-  if(!navigator.onLine){ showToast('You need to be online to join a tab'); return; }
+  if(!sbReady() || !navigator.onLine){ showToast('You need to be online to join a tab'); return; }
   try{
     const {data:sc} = await sb.from('scenarios').select('*').eq('share_code', code).single();
     if(!sc){ showToast('Code not found'); return; }
@@ -947,6 +958,7 @@ function openExportOptions(){
 =========================================================== */
 setStatus();
 render();
+if(!sbReady()) showToast('Sync unavailable right now — working offline');
 pullAllJoinedScenarios();
 flushOutbox();
 setInterval(()=>{ if(navigator.onLine) pullAllJoinedScenarios(); }, 30000);
