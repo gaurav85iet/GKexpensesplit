@@ -762,7 +762,7 @@ document.getElementById('pickContactBtn').addEventListener('click', async ()=>{
       contacts.forEach(c=>{ const nm=(c.name && c.name[0])?c.name[0]:'Unnamed'; addMemberToScenario(nm); });
     }catch(err){ showToast('Cancelled — add the name manually above instead'); }
   } else {
-    showToast('Contact picker isn\\'t supported here — just type the name above and tap Add');
+    showToast("Contact picker isn't supported here — just type the name above and tap Add");
   }
 });
 
